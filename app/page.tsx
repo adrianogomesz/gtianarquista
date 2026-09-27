@@ -1,8 +1,142 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { ArrowRight, ChevronDown, Crosshair, Gem, Menu, Shield, Swords, Sparkles, X, Zap } from 'lucide-react'
 import Image from 'next/image'
+
+// --- NOVO COMPONENTE DE PARTÍCULAS INTERATIVAS ---
+function InteractiveParticles() {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    let particles: Particle[] = []
+    let animationFrameId: number
+    const mouse = { x: -9999, y: -9999 }
+
+    const resize = () => {
+      const parent = canvas.parentElement
+      if (parent) {
+        canvas.width = parent.offsetWidth
+        canvas.height = parent.offsetHeight
+      }
+      initParticles()
+    }
+
+    class Particle {
+      x: number
+      y: number
+      size: number
+      vx: number
+      vy: number
+
+      constructor() {
+        this.x = Math.random() * canvas.width
+        this.y = Math.random() * canvas.height
+        this.size = Math.random() * 2 + 0.5
+        this.vx = (Math.random() - 0.5) * 0.6
+        this.vy = (Math.random() - 0.5) * 0.6
+      }
+
+      update() {
+        this.x += this.vx
+        this.y += this.vy
+        if (this.x < 0 || this.x > canvas.width) this.vx *= -1
+        if (this.y < 0 || this.y > canvas.height) this.vy *= -1
+      }
+
+      draw() {
+        if (!ctx) return
+        ctx.fillStyle = 'rgba(216, 167, 255, 0.4)'
+        ctx.beginPath()
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2)
+        ctx.fill()
+      }
+    }
+
+    const initParticles = () => {
+      particles = []
+      // Ajusta a quantidade de partículas com base na largura da tela
+      const numParticles = Math.min(Math.floor(window.innerWidth / 12), 120)
+      for (let i = 0; i < numParticles; i++) {
+        particles.push(new Particle())
+      }
+    }
+
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      
+      particles.forEach((p, index) => {
+        p.update()
+        p.draw()
+        
+        // Conecta as partículas ao cursor do rato
+        const dx = mouse.x - p.x
+        const dy = mouse.y - p.y
+        const dist = Math.sqrt(dx * dx + dy * dy)
+        
+        if (dist < 180) {
+          ctx.beginPath()
+          // Linha roxa brilhante ligando ao rato
+          ctx.strokeStyle = `rgba(185, 108, 255, ${0.3 - dist / 600})`
+          ctx.lineWidth = 1
+          ctx.moveTo(p.x, p.y)
+          ctx.lineTo(mouse.x, mouse.y)
+          ctx.stroke()
+        }
+
+        // Conecta as partículas umas às outras para formar uma teia
+        for (let j = index + 1; j < particles.length; j++) {
+          const p2 = particles[j]
+          const dx2 = p.x - p2.x
+          const dy2 = p.y - p2.y
+          const dist2 = Math.sqrt(dx2 * dx2 + dy2 * dy2)
+          if (dist2 < 80) {
+            ctx.beginPath()
+            ctx.strokeStyle = `rgba(216, 167, 255, ${0.15 - dist2 / 533})`
+            ctx.lineWidth = 0.5
+            ctx.moveTo(p.x, p.y)
+            ctx.lineTo(p2.x, p2.y)
+            ctx.stroke()
+          }
+        }
+      })
+      animationFrameId = requestAnimationFrame(animate)
+    }
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect()
+      mouse.x = e.clientX - rect.left
+      mouse.y = e.clientY - rect.top
+    }
+
+    const handleMouseLeave = () => {
+      mouse.x = -9999
+      mouse.y = -9999
+    }
+
+    window.addEventListener('resize', resize)
+    window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('mouseout', handleMouseLeave)
+
+    resize()
+    animate()
+
+    return () => {
+      window.removeEventListener('resize', resize)
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mouseout', handleMouseLeave)
+      cancelAnimationFrame(animationFrameId)
+    }
+  }, [])
+
+  return <canvas ref={canvasRef} className="pointer-events-none absolute inset-0 z-0 opacity-70 mix-blend-screen" />
+}
+// ----------------------------------------------
 
 const navItems = [
   { label: 'Início', href: '#inicio' },
@@ -24,10 +158,6 @@ export default function Page() {
   return (
     <main className="relative min-h-screen overflow-x-hidden bg-[#0b0a0f] text-[#f5f1e8] selection:bg-[#a855f7] selection:text-white">
       
-      {/* 
-        Efeitos de Tempestade Ajustados
-        (Intervalo um pouco maior para não cansar a vista, mas mantendo a intensidade) 
-      */}
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes flashA {
           0%, 82%, 88%, 94%, 100% { opacity: 0; }
@@ -51,8 +181,7 @@ export default function Page() {
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 lg:px-8">
           <a href="#inicio" className="flex items-center gap-3" aria-label="GTI Anarquista - início">
             <span className="grid size-10 place-items-center border border-[#b96cff]/50 bg-[#251432] shadow-[0_0_25px_rgba(168,85,247,.18)]">
-              {/* FILTROS APLICADOS AQUI */}
-              <Image src="/thetfordfavicon.png" alt="Símbolo de Thetford" width={40} height={40} className="size-8 object-cover sepia hue-rotate-[230deg] saturate-[3] contrast-[1.25]" priority />
+              <Image src="/thetfordfavicon.png" alt="Símbolo de Thetford" width={40} height={40} className="size-8 object-cover grayscale sepia hue-rotate-[260deg] saturate-[500%] contrast-[1.4] brightness-110 drop-shadow-[0_0_5px_rgba(168,85,247,0.4)]" priority />
             </span>
             <span className="font-mono text-sm font-bold tracking-[0.2em]">GTI<span className="text-[#b96cff]">.</span>ANARQUISTA</span>
           </a>
@@ -69,42 +198,37 @@ export default function Page() {
         <div className="absolute inset-0 bg-[url('/guild-hero.png')] bg-cover bg-center" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_52%,rgba(116,55,164,.28),transparent_34%),linear-gradient(90deg,#0b0a0f_8%,rgba(11,10,15,.82)_42%,rgba(11,10,15,.28)_100%)]" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0b0a0f] via-transparent to-[#0b0a0f]/30" />
-        <div className="pointer-events-none absolute inset-0 opacity-30 [background-image:radial-gradient(circle_at_20%_20%,rgba(216,167,255,.5)_1px,transparent_1px),radial-gradient(circle_at_80%_70%,rgba(168,85,247,.4)_1px,transparent_1px)] [background-size:46px_46px,72px_72px] animate-[drift_18s_linear_infinite]" />
+        
+        {/* AS PARTÍCULAS INTERATIVAS ENTRAM AQUI NO LUGAR DO DRIFT ANTIGO */}
+        <InteractiveParticles />
 
         {/* --- INÍCIO DOS EFEITOS DE RAIOS --- */}
-        
-        {/* Clarões gerais de fundo no céu */}
         <div className="pointer-events-none absolute inset-0 z-10 bg-[#d8a7ff]/20 mix-blend-color-dodge bolt-1" />
         <div className="pointer-events-none absolute inset-0 z-10 bg-[#b96cff]/15 mix-blend-color-dodge bolt-2" />
         
-        {/* Raio 1 (Principal - Direita do guerreiro) */}
         <div className="pointer-events-none absolute right-[2%] top-[-5%] z-10 h-[85%] w-24 bolt-1 sm:right-[8%] sm:w-36">
           <svg viewBox="0 0 100 500" fill="none" preserveAspectRatio="none" className="h-full w-full">
             <path d="M50 0 L30 100 L45 120 L20 250 L40 270 L10 400 L50 500 L40 400 L65 260 L45 240 L70 110 Z" fill="#ffffff" />
           </svg>
         </div>
 
-        {/* Raio 2 (Esquerda do guerreiro) */}
         <div className="pointer-events-none absolute right-[15%] top-[5%] z-10 h-[65%] w-16 bolt-2 sm:right-[25%] sm:w-24">
           <svg viewBox="0 0 100 400" fill="none" preserveAspectRatio="none" className="h-full w-full">
             <path d="M60 0 L40 80 L55 90 L30 200 L45 210 L20 350 L50 400 L35 340 L55 200 L40 190 L65 80 Z" fill="#f3e8ff" />
           </svg>
         </div>
 
-        {/* Raio 3 (Mais ao fundo/esquerda) */}
         <div className="pointer-events-none absolute right-[28%] top-[-10%] z-10 h-[55%] w-12 bolt-3 sm:right-[38%] sm:w-16">
           <svg viewBox="0 0 100 300" fill="none" preserveAspectRatio="none" className="h-full w-full">
             <path d="M40 0 L20 60 L35 70 L10 150 L25 160 L0 250 L30 300 L20 240 L40 150 L25 140 L50 60 Z" fill="#e9d5ff" />
           </svg>
         </div>
 
-        {/* Raio 4 (Atrás da bandeira) */}
         <div className="pointer-events-none absolute right-[10%] top-[-2%] z-0 h-[75%] w-20 opacity-60 bolt-4 sm:right-[15%] sm:w-28">
           <svg viewBox="0 0 100 450" fill="none" preserveAspectRatio="none" className="h-full w-full">
             <path d="M70 0 L40 90 L60 100 L30 220 L50 230 L10 380 L60 450 L40 370 L70 210 L45 190 L80 90 Z" fill="#ffffff" />
           </svg>
         </div>
-        
         {/* --- FIM DOS EFEITOS DE RAIOS --- */}
 
         <div className="relative mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-7xl items-center px-5 py-20 lg:px-8">
@@ -168,8 +292,7 @@ export default function Page() {
 
             <div className="relative z-30 grid size-32 place-items-center rounded-full border border-[#d8a7ff]/50 bg-[#21152b]/90 text-center shadow-[0_0_55px_rgba(168,85,247,.28)] animate-[corePulse_4s_ease-in-out_infinite] lg:size-40">
               <div>
-                {/* FILTROS APLICADOS AQUI */}
-                <Image src="/thetfordfavicon.png" alt="Símbolo de Thetford" width={96} height={96} className="mx-auto mb-2 size-14 rounded-full object-cover shadow-[0_0_24px_rgba(216,167,255,.55)] sepia hue-rotate-[230deg] saturate-[3] contrast-[1.25]" />
+                <Image src="/thetfordfavicon.png" alt="Símbolo de Thetford" width={96} height={96} className="mx-auto mb-2 size-14 rounded-full object-cover shadow-[0_0_24px_rgba(216,167,255,.55)] grayscale sepia hue-rotate-[260deg] saturate-[500%] contrast-[1.4] brightness-110" />
                 <span className="font-mono text-[10px] font-bold uppercase tracking-[.2em] text-white/80">GTI<br />Anarquista</span>
               </div>
             </div>
