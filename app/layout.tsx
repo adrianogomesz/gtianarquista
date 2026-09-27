@@ -8,8 +8,8 @@ export const metadata: Metadata = {
   generator: 'Next.js',
   icons: {
     // Apontamos diretamente para o emblema que você já tem na pasta public
-    icon: '/thetfordfavicon.png',
-    apple: '/thetfordfavicon.png',
+    icon: '/thetfordemblema.png',
+    apple: '/thetfordemblema.png',
   },
 }
 

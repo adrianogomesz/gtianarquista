@@ -52,7 +52,7 @@ export default function Page() {
           <a href="#inicio" className="flex items-center gap-3" aria-label="GTI Anarquista - início">
             <span className="grid size-10 place-items-center border border-[#b96cff]/50 bg-[#251432] shadow-[0_0_25px_rgba(168,85,247,.18)]">
               {/* FILTROS APLICADOS AQUI */}
-              <Image src="/thetford-emblem.png" alt="Símbolo de Thetford" width={40} height={40} className="size-8 object-cover sepia hue-rotate-[230deg] saturate-[3] contrast-[1.25]" priority />
+              <Image src="/thetfordfavicon.png" alt="Símbolo de Thetford" width={40} height={40} className="size-8 object-cover sepia hue-rotate-[230deg] saturate-[3] contrast-[1.25]" priority />
             </span>
             <span className="font-mono text-sm font-bold tracking-[0.2em]">GTI<span className="text-[#b96cff]">.</span>ANARQUISTA</span>
           </a>
@@ -169,7 +169,7 @@ export default function Page() {
             <div className="relative z-30 grid size-32 place-items-center rounded-full border border-[#d8a7ff]/50 bg-[#21152b]/90 text-center shadow-[0_0_55px_rgba(168,85,247,.28)] animate-[corePulse_4s_ease-in-out_infinite] lg:size-40">
               <div>
                 {/* FILTROS APLICADOS AQUI */}
-                <Image src="/thetford-emblem.png" alt="Símbolo de Thetford" width={96} height={96} className="mx-auto mb-2 size-14 rounded-full object-cover shadow-[0_0_24px_rgba(216,167,255,.55)] sepia hue-rotate-[230deg] saturate-[3] contrast-[1.25]" />
+                <Image src="/thetfordfavicon.png" alt="Símbolo de Thetford" width={96} height={96} className="mx-auto mb-2 size-14 rounded-full object-cover shadow-[0_0_24px_rgba(216,167,255,.55)] sepia hue-rotate-[230deg] saturate-[3] contrast-[1.25]" />
                 <span className="font-mono text-[10px] font-bold uppercase tracking-[.2em] text-white/80">GTI<br />Anarquista</span>
               </div>
             </div>
