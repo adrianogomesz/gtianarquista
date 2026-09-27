@@ -4,7 +4,7 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'GTI Anarquista',
-  description: 'Guilda independente de Thetford para jogadores que pensam diferente. ZvZ, PvP, Economia e Avalon.',
+  description: 'Guild independente de Thetford para jogadores que pensam diferente. PvP Small Scale, Guerra de Facções, Avalon e mais.',
   generator: 'Next.js',
   icons: {
     // Apontamos diretamente para o emblema que você já tem na pasta public
